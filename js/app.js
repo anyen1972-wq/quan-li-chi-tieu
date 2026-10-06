@@ -352,6 +352,12 @@ const PageManager = {
     // Hide all pages
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
 
+    // FAB chỉ hiện ở Trang chủ
+    const fab = document.getElementById('fabAdd');
+    if (fab) {
+      fab.style.display = pageId === 'pageHome' ? 'flex' : 'none';
+    }
+
     // Show target page
     const targetPage = document.getElementById(pageId);
     if (targetPage) {
