@@ -29,6 +29,9 @@ body {
   min-height: 100vh;
   position: relative;
   padding-bottom: calc(var(--bottom-nav-height) + 56px + var(--space-lg) * 2 + env(safe-area-inset-bottom, 0px));
+  border-left: 1px solid var(--border-light);
+  border-right: 1px solid var(--border-light);
+  box-sizing: border-box;
 }
 
 /* ===== Header ===== */

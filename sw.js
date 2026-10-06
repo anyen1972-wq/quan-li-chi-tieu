@@ -3,7 +3,7 @@
  * Hỗ trợ chạy offline khi không có kết nối Internet
  */
 
-const CACHE_NAME = 'spendwise-cache-v45';
+const CACHE_NAME = 'spendwise-cache-v46';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
