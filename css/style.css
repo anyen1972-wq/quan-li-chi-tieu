@@ -747,7 +747,7 @@ body {
 /* ===== Toast Notification ===== */
 .toast-container {
   position: fixed;
-  top: calc(var(--space-lg) + env(safe-area-inset-top, 0px));
+  top: calc(var(--header-height, 60px) + var(--space-md) + env(safe-area-inset-top, 0px));
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;
