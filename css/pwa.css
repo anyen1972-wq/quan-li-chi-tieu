@@ -179,7 +179,9 @@
 }
 
 .onboarding-dot.active {
-  width: 24px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
   background: var(--primary);
 }
 
