@@ -319,14 +319,42 @@ const Features = {
   },
 
   setCurrency(code) {
+    const oldBase = this.getCurrency();
+    if (oldBase === code) return;
+
+    const oldRate = this.CURRENCIES[oldBase].rate;
+    const newRate = this.CURRENCIES[code].rate;
+    const convert = (v) => Math.round((v * oldRate) / newRate);
+
+    // Chuyển toàn bộ dữ liệu tiền sang đơn vị mới
+    const txs = Storage.get('spendwise_transactions', []);
+    txs.forEach(t => { t.amount = convert(t.amount); });
+    Storage.set('spendwise_transactions', txs);
+
+    const budgets = Storage.get('spendwise_budgets', {});
+    Object.keys(budgets).forEach(k => { budgets[k] = convert(budgets[k]); });
+    Storage.set('spendwise_budgets', budgets);
+
+    const goals = this.getGoals();
+    goals.forEach(g => { g.target = convert(g.target); g.saved = convert(g.saved); });
+    this.saveGoals(goals);
+
     Storage.set('spendwise_currency', code);
-    if (typeof ChartManager !== 'undefined' && typeof PageManager !== 'undefined' && PageManager.currentPage === 'pageStats') {
-      ChartManager.renderAllCharts();
+
+    // Form thêm giao dịch mặc định theo đồng tiền mới
+    const txCur = document.getElementById('inputCurrencyTx');
+    if (txCur) txCur.value = code;
+
+    if (typeof TransactionManager !== 'undefined') {
+      TransactionManager.renderTransactions();
+      TransactionManager.updateSummary();
     }
-    if (typeof TransactionManager !== 'undefined') TransactionManager.renderTransactions();
     if (typeof BudgetManager !== 'undefined') {
       BudgetManager.renderBudgetList();
       BudgetManager.updateBudgetSummary();
+    }
+    if (typeof ChartManager !== 'undefined' && typeof PageManager !== 'undefined' && PageManager.currentPage === 'pageStats') {
+      ChartManager.renderAllCharts();
     }
     this.renderGoals();
   },
@@ -395,6 +423,10 @@ const Features = {
     this.bindGoalEvents();
     this.renderRecurringList();
     this.processRecurring();
+
+    // Form thêm giao dịch mặc định theo đồng tiền hiện tại
+    const txCurInit = document.getElementById('inputCurrencyTx');
+    if (txCurInit) txCurInit.value = this.getCurrency();
 
     // Tỉ giá đầu tháng — sau khi lấy xong sẽ vẽ lại UI
     this.refreshRates().then(() => {

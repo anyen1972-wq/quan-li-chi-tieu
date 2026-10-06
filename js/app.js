@@ -233,10 +233,11 @@ const FormManager = {
     const name = document.getElementById('inputName').value.trim();
     const rawAmount = parseFloat(document.getElementById('inputAmount').value);
     const currency = (document.getElementById('inputCurrencyTx') || {}).value || 'VND';
-    // Lưu gốc bằng VNĐ; nếu nhập đô/euro thì quy đổi theo tỉ giá đầu tháng
-    const rate = (typeof Features !== 'undefined' && Features.CURRENCIES[currency])
-      ? Features.CURRENCIES[currency].rate : 1;
-    const amount = Math.round(rawAmount * (currency === 'VND' ? 1 : rate));
+    // Quy đổi về đồng tiền hiện tại (base) theo tỉ giá đầu tháng
+    const base = (typeof Features !== 'undefined') ? Features.getCurrency() : 'VND';
+    const srcRate = (typeof Features !== 'undefined' && Features.CURRENCIES[currency]) ? Features.CURRENCIES[currency].rate : 1;
+    const baseRate = (typeof Features !== 'undefined' && Features.CURRENCIES[base]) ? Features.CURRENCIES[base].rate : 1;
+    const amount = Math.round(rawAmount * (srcRate / baseRate));
     const date = document.getElementById('inputDate').value;
     const note = document.getElementById('inputNote').value.trim();
 

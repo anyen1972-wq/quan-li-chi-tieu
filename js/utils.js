@@ -12,11 +12,11 @@ const Utils = {
     const absAmount = Math.abs(amount);
     const code = (typeof Storage !== 'undefined' && Storage.get) ? Storage.get('spendwise_currency', 'VND') : 'VND';
     const curr = (typeof Features !== 'undefined' && Features.CURRENCIES[code]) || { symbol: 'đ', rate: 1, locale: 'vi-VN' };
+    // Dữ liệu đã lưu ở đơn vị này → không quy đổi thêm
     if (code === 'VND') {
       return `${absAmount.toLocaleString('vi-VN')}đ`;
     }
-    const converted = absAmount / curr.rate;
-    return `${converted.toLocaleString(curr.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${curr.symbol}`;
+    return `${absAmount.toLocaleString(curr.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${curr.symbol}`;
   },
 
   /**
