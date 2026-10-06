@@ -1,0 +1,810 @@
+﻿<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SpendWise - Ứng dụng quản lý chi tiêu cá nhân thông minh">
+  <title>SpendWise - Quản Lý Chi Tiêu</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- PWA & Mobile Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6C63FF">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/stats.css">
+  <link rel="stylesheet" href="css/budget.css">
+  <link rel="stylesheet" href="css/pwa.css">
+  <link rel="stylesheet" href="css/responsive.css">
+
+  <!-- Favicon -->
+  <link rel="icon" href="assets/icon.svg">
+</head>
+<body>
+  <div id="printReport"></div>
+
+  <!-- ===== Auth Overlay (Đăng nhập / Đăng ký) ===== -->
+  <div class="modal-overlay" id="authOverlay" style="z-index:400">
+    <div class="modal" style="border-radius:var(--radius-xl) var(--radius-xl) 0 0">
+      <h3 class="modal__title" style="margin-bottom:var(--space-md)">
+        <i class="fa-solid fa-user-circle" style="color:var(--primary)"></i> Tài khoản SpendWise
+      </h3>
+      <div class="form__group">
+        <label class="form__label" for="authEmail">Tài khoản</label>
+        <input type="text" class="form__input" id="authEmail" placeholder="VD: an123 (hoặc email)" style="width:100%">
+      </div>
+      <div class="form__group" style="position:relative">
+        <label class="form__label" for="authPassword">Mật khẩu</label><div style="position:relative"><input type="password" class="form__input" id="authPassword" placeholder="Tối thiểu 6 ký tự" style="padding-right:44px">
+        <button type="button" class="pw-eye" data-target="authPassword" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer">
+          <i class="fa-solid fa-eye"></i>
+        </button></div>
+      </div>
+      <div style="display:flex;gap:var(--space-sm)">
+        <button type="button" class="form__submit" id="authLoginBtn" style="flex:1">Đăng nhập</button>
+        <button type="button" class="form__submit" id="authRegisterBtn" style="flex:1;background:var(--danger);box-shadow:0 4px 16px rgba(255,107,107,0.35)">Đăng ký</button>
+      </div>
+      <div style="text-align:center;margin:var(--space-md) 0;color:var(--text-muted);font-size:var(--font-size-sm)">— Hoặc —</div>
+      <button type="button" id="authGoogleBtn" style="width:100%;padding:var(--space-md);border:1px solid var(--border);background:var(--bg-card);color:var(--text-primary);border-radius:9999px;font-weight:600;font-family:var(--font-family);font-size:var(--font-size-base);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:var(--space-sm);box-shadow:var(--shadow-sm);transition:all var(--transition-fast)" onmouseover="this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.boxShadow='var(--shadow-sm)'">
+        <i class="fa-brands fa-google" style="color:#EA4335"></i> Tiếp tục với Google
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== Register Overlay (Đăng ký tài khoản mới) ===== -->
+  <div class="modal-overlay" id="authRegisterOverlay" style="z-index:401">
+    <div class="modal" style="border-radius:var(--radius-xl) var(--radius-xl) 0 0;position:relative">
+      <button class="modal__close" id="registerCloseBtn" style="position:absolute;top:var(--space-md);right:var(--space-md)">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <h3 class="modal__title" style="margin-bottom:var(--space-md)">
+        <i class="fa-solid fa-user-plus" style="color:var(--danger)"></i> Tạo tài khoản mới
+      </h3>
+      <div class="form__group">
+        <label class="form__label" for="registerName">Tên đăng nhập</label>
+        <input type="text" class="form__input" id="registerName" placeholder="VD: an123 (không dấu, không cách)" maxlength="24" oninput="document.getElementById('registerNameError').style.display='none'">
+        <p id="registerNameError" style="display:none;color:var(--danger);font-size:var(--font-size-xs);margin-top:var(--space-xs)">
+          <i class="fa-solid fa-circle-exclamation"></i> Tên đăng nhập này đã được đăng ký!
+        </p>
+      </div>
+      <p style="font-size:var(--font-size-xs);color:var(--text-muted);margin-bottom:var(--space-sm)">
+        <i class="fa-solid fa-circle-info"></i> Dùng tên này để đăng nhập lần sau. Không có dấu, không khoảng trắng.
+      </p>
+      <div class="form__group" style="position:relative">
+        <label class="form__label" for="registerPassword">Mật khẩu</label>
+        <div style="position:relative">
+          <input type="password" class="form__input" id="registerPassword" placeholder="Tối thiểu 6 ký tự" style="padding-right:44px">
+          <button type="button" class="pw-eye" data-target="registerPassword" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer">
+            <i class="fa-solid fa-eye"></i>
+          </button>
+        </div>
+      </div>
+      <div class="form__group" style="position:relative">
+        <label class="form__label" for="registerPassword2">Nhập lại mật khẩu</label>
+        <div style="position:relative">
+          <input type="password" class="form__input" id="registerPassword2" placeholder="Nhập lại mật khẩu" style="padding-right:44px">
+          <button type="button" class="pw-eye" data-target="registerPassword2" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer">
+            <i class="fa-solid fa-eye"></i>
+          </button>
+        </div>
+      </div>
+      <button type="button" class="form__submit" id="registerSubmitBtn" style="background:var(--danger);box-shadow:0 4px 16px rgba(255,107,107,0.35)">Tạo tài khoản</button>
+      <button type="button" class="settings-btn" id="registerBackBtn" style="width:100%;justify-content:center;margin-top:var(--space-sm)">
+        <i class="fa-solid fa-arrow-left"></i> Quay lại đăng nhập
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== PWA Install Banner ===== -->
+  <div class="pwa-install-banner" id="pwaInstallBanner" style="display: none;">
+    <div class="pwa-install-banner__left">
+      <img src="assets/icon.svg" class="pwa-install-banner__icon" alt="SpendWise">
+      <div>
+        <div class="pwa-install-banner__title">Cài đặt SpendWise</div>
+        <div class="pwa-install-banner__desc">Dùng như app điện thoại, mở nhanh & offline</div>
+      </div>
+    </div>
+    <div class="pwa-install-banner__right">
+      <button class="pwa-install-btn" id="pwaInstallBtn">Cài đặt</button>
+      <button class="pwa-close-btn" id="pwaCloseBtn"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  </div>
+
+  <div class="app">
+    <!-- ===== Header ===== -->
+    <header class="header">
+      <a href="#" class="header__logo">
+        <i class="fa-solid fa-wallet"></i>
+        SpendWise
+      </a>
+      <div class="header__actions">
+        <button class="header__btn" id="btnOpenSplitter" title="Chia tiền nhóm (Bill Splitter)">
+          <i class="fa-solid fa-calculator"></i>
+        </button>
+        <button class="header__btn" id="themeToggle" title="Đổi giao diện">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- ============================================== -->
+    <!--  PAGE: Trang Chủ                               -->
+    <!-- ============================================== -->
+    <div class="page page--home active" id="pageHome">
+      <!-- Summary Cards -->
+      <section class="summary">
+        <div class="summary__balance">
+          <div class="summary__balance-label">Số dư hiện tại</div>
+          <div class="summary__balance-amount" id="totalBalance">0đ</div>
+        </div>
+        <div class="summary__cards">
+          <div class="summary__card">
+            <div class="summary__card-header">
+              <div class="summary__card-icon summary__card-icon--income">
+                <i class="fa-solid fa-arrow-trend-up"></i>
+              </div>
+              <span class="summary__card-label">Thu nhập</span>
+            </div>
+            <div class="summary__card-amount summary__card-amount--income" id="totalIncome">0đ</div>
+          </div>
+          <div class="summary__card">
+            <div class="summary__card-header">
+              <div class="summary__card-icon summary__card-icon--expense">
+                <i class="fa-solid fa-arrow-trend-down"></i>
+              </div>
+              <span class="summary__card-label">Chi tiêu</span>
+            </div>
+            <div class="summary__card-amount summary__card-amount--expense" id="totalExpense">0đ</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Filter Tabs -->
+      <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all">Tất cả</button>
+        <button class="filter-tab" data-filter="expense">Chi tiêu</button>
+        <button class="filter-tab" data-filter="income">Thu nhập</button>
+      </div>
+
+      <!-- Transaction List -->
+      <section class="section">
+        <div class="section__header">
+          <h2 class="section__title">Giao dịch gần đây</h2>
+        </div>
+        <div class="transactions" id="transactionList">
+          <!-- Rendered by JS -->
+        </div>
+      </section>
+    </div>
+
+    <!-- ============================================== -->
+    <!--  PAGE: Thống Kê                                -->
+    <!-- ============================================== -->
+    <div class="page page--stats" id="pageStats">
+      <!-- Period Filter -->
+      <div class="stats-period">
+        <button class="stats-period-btn" data-period="week">Tuần này</button>
+        <button class="stats-period-btn active" data-period="month">Tháng này</button>
+        <button class="stats-period-btn" data-period="year">Năm nay</button>
+      </div>
+
+      <!-- Stats Summary Cards -->
+      <div class="stats-summary">
+        <div class="stats-summary__card stats-summary__card--expense">
+          <div class="stats-summary__icon">
+            <i class="fa-solid fa-arrow-trend-down"></i>
+          </div>
+          <div class="stats-summary__info">
+            <span class="stats-summary__label">Tổng chi</span>
+            <span class="stats-summary__value" id="statsTotalExpense">0đ</span>
+          </div>
+        </div>
+        <div class="stats-summary__card stats-summary__card--income">
+          <div class="stats-summary__icon">
+            <i class="fa-solid fa-arrow-trend-up"></i>
+          </div>
+          <div class="stats-summary__info">
+            <span class="stats-summary__label">Tổng thu</span>
+            <span class="stats-summary__value" id="statsTotalIncome">0đ</span>
+          </div>
+        </div>
+        <div class="stats-summary__card stats-summary__card--avg">
+          <div class="stats-summary__icon">
+            <i class="fa-solid fa-calculator"></i>
+          </div>
+          <div class="stats-summary__info">
+            <span class="stats-summary__label">TB/ngày</span>
+            <span class="stats-summary__value" id="statsAvgPerDay">0đ</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info bar -->
+      <div class="stats-info-bar">
+        <span id="statsTxCount">0 giao dịch</span>
+        <span>Chi nhiều nhất: <strong id="statsTopCategory">—</strong></span>
+      </div>
+
+      <!-- Pie Chart -->
+      <section class="stats-chart-section">
+        <div class="stats-chart-section__header">
+          <h3><i class="fa-solid fa-chart-pie"></i> Chi tiêu theo danh mục</h3>
+        </div>
+        <div class="stats-chart-container stats-chart-container--pie">
+          <canvas id="pieChart"></canvas>
+        </div>
+        <div class="stats-legend" id="pieLegend">
+          <!-- Rendered by JS -->
+        </div>
+      </section>
+
+      <!-- Bar Chart -->
+      <section class="stats-chart-section">
+        <div class="stats-chart-section__header">
+          <h3><i class="fa-solid fa-chart-column"></i> Thu chi theo thời gian</h3>
+        </div>
+        <div class="stats-chart-container stats-chart-container--bar">
+          <canvas id="barChart"></canvas>
+        </div>
+      </section>
+
+      <!-- Line Chart -->
+      <section class="stats-chart-section">
+        <div class="stats-chart-section__header">
+          <h3><i class="fa-solid fa-chart-line"></i> Xu hướng chi tiêu</h3>
+        </div>
+        <div class="stats-chart-container stats-chart-container--line">
+          <canvas id="lineChart"></canvas>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============================================== -->
+    <!--  PAGE: Ngân sách (Phase 3)                     -->
+    <!-- ============================================== -->
+    <div class="page page--budget" id="pageBudget">
+      <!-- Budget Summary Card -->
+      <div class="budget-summary">
+        <div class="budget-summary__header">
+          <div class="budget-summary__title">
+            <i class="fa-solid fa-bullseye" style="color: var(--primary)"></i>
+            <span>Ngân sách tháng này</span>
+          </div>
+          <button class="budget-summary__btn" id="btnOpenBudgetModal">
+            <i class="fa-solid fa-sliders"></i> Chỉnh hạn mức
+          </button>
+        </div>
+
+        <div class="budget-summary__stats">
+          <div class="budget-summary__stat">
+            <span class="budget-summary__stat-label">Tổng hạn mức</span>
+            <span class="budget-summary__stat-value" id="budgetTotalLimit">0đ</span>
+          </div>
+          <div class="budget-summary__stat">
+            <span class="budget-summary__stat-label">Đã chi</span>
+            <span class="budget-summary__stat-value" id="budgetTotalSpent">0đ</span>
+          </div>
+          <div class="budget-summary__stat">
+            <span class="budget-summary__stat-label">Còn lại</span>
+            <span class="budget-summary__stat-value" id="budgetTotalRemaining">0đ</span>
+          </div>
+        </div>
+
+        <div class="budget-summary__progress-bar">
+          <div class="budget-summary__progress-fill budget-summary__progress-fill--safe" id="budgetOverallProgress" style="width: 0%"></div>
+        </div>
+        <div class="budget-summary__progress-info">
+          <span>Tiến độ ngân sách</span>
+          <span id="budgetOverallPercent">0%</span>
+        </div>
+      </div>
+
+      <!-- Category Budget Progress List -->
+      <div class="section__header" style="padding: 0 var(--space-lg); margin-bottom: var(--space-sm);">
+        <h2 class="section__title">Hạn mức theo danh mục</h2>
+      </div>
+      <div class="budget-list" id="budgetList">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Mục tiêu tiết kiệm -->
+      <div class="section__header" style="padding: 0 var(--space-lg); margin: var(--space-lg) 0 var(--space-sm);">
+        <h2 class="section__title">🎯 Mục tiêu tiết kiệm</h2>
+      </div>
+      <div style="padding: 0 var(--space-lg); margin-bottom: var(--space-lg)">
+        <div class="settings-item" style="margin-bottom: var(--space-sm)">
+          <input type="text" class="form__input" id="inputGoalName" placeholder="Tên mục tiêu (VD: Mua laptop)" style="flex:2">
+          <input type="number" class="form__input" id="inputGoalTarget" placeholder="Số tiền" style="flex:1">
+          <button class="settings-btn settings-btn--primary" id="btnAddGoal">
+            <i class="fa-solid fa-plus"></i> Thêm
+          </button>
+        </div>
+        <div id="goalList"></div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!--  PAGE: Cài đặt (Phase 3)                       -->
+    <!-- ============================================== -->
+    <div class="page page--settings" id="pageSettings">
+      <!-- Section: Báo cáo & Xuất dữ liệu -->
+      <section class="settings-section">
+        <h3 class="settings-section__title">
+          <i class="fa-solid fa-file-excel"></i> Xuất báo cáo & Dữ liệu
+        </h3>
+        <div class="settings-group">
+          <div class="settings-item">
+            <div class="settings-item__info">
+              <span class="settings-item__title">Xuất file Excel (.xlsx)</span>
+              <span class="settings-item__desc">Tải về toàn bộ thu chi dạng bảng tính Excel</span>
+            </div>
+            <button class="settings-btn settings-btn--primary" id="btnExportExcel">
+              <i class="fa-solid fa-download"></i> Tải Excel
+            </button>
+          </div>
+          <div class="settings-item">
+            <div class="settings-item__info">
+              <span class="settings-item__title">Xuất file CSV</span>
+              <span class="settings-item__desc">Dạng dữ liệu phổ thông có dấu tiếng Việt</span>
+            </div>
+            <button class="settings-btn" id="btnExportCSV">
+              <i class="fa-solid fa-file-csv"></i> Tải CSV
+            </button>
+          </div>
+          <div class="settings-item">
+            <div class="settings-item__info">
+              <span class="settings-item__title">Báo cáo PDF</span>
+              <span class="settings-item__desc">In báo cáo thu chi đẹp mắt (lưu PDF qua hộp thoại in)</span>
+            </div>
+            <button class="settings-btn settings-btn--primary" id="btnExportPDF">
+              <i class="fa-solid fa-file-pdf"></i> Xuất PDF
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Đa tiền tệ -->
+      <section class="settings-section">
+        <h3 class="settings-section__title">
+          <i class="fa-solid fa-coins"></i> Tiền tệ hiển thị
+        </h3>
+        <div class="settings-group">
+          <div class="settings-item">
+            <div class="settings-item__info">
+              <span class="settings-item__title">Đơn vị tiền tệ</span>
+              <span class="settings-item__desc">Dữ liệu lưu bằng VNĐ, chỉ đổi cách hiển thị</span>
+            </div>
+            <select class="form__input" id="inputCurrency" style="width:auto;cursor:pointer">
+              <option value="VND">VNĐ (đ)</option>
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Ví / Tài khoản -->
+      <section class="settings-section">
+        <h3 class="settings-section__title">
+          <i class="fa-solid fa-wallet"></i> Ví / Tài khoản
+        </h3>
+        <div class="settings-group">
+          <div class="settings-item">
+            <input type="text" class="form__input" id="inputWalletName" placeholder="VD: ShopeePay, VCB..." style="flex:1">
+            <button class="settings-btn settings-btn--primary" id="btnAddWallet">
+              <i class="fa-solid fa-plus"></i> Thêm ví
+            </button>
+          </div>
+        </div>
+        <div id="walletList" style="margin-top:var(--space-sm)"></div>
+      </section>
+
+      <!-- Section: Giao dịch định kỳ -->
+      <section class="settings-section">
+        <h3 class="settings-section__title">
+          <i class="fa-solid fa-repeat"></i> Giao dịch định kỳ
+        </h3>
+        <div class="settings-group" id="recurringList"></div>
+        <p style="font-size:var(--font-size-xs);color:var(--text-muted);margin-top:var(--space-sm)">
+          Thêm giao dịch định kỳ bằng cách chọn mục "Lặp lại" trong form thêm giao dịch.
+        </p>
+      </section>
+
+      <!-- Section: Sao lưu & Khôi phục -->
+      <section class="settings-section">
+        <h3 class="settings-section__title">
+          <i class="fa-solid fa-cloud-arrow-down"></i> Sao lưu & Phục hồi
+        </h3>
+        <div class="settings-group">
+          <div class="settings-item">
+            <div class="settings-item__info">
+              <span class="settings-item__title">Tải file sao lưu (JSON)</span>
+              <span class="settings-item__desc">Lưu an toàn toàn bộ dữ liệu & ngân sách về máy</span>
+            </div>
+            <button class="settings-btn" id="btnBackupJSON">
+              <i class="fa-solid fa-floppy-disk"></i> Sao lưu
+            </button>
+          </div>
+          <div class="settings-item">
+            <div class="settings-item__info">
+              <span class="settings-item__title">Khôi phục từ file JSON</span>
+              <span class="settings-item__desc">Nạp lại dữ liệu từ file sao lưu trước đó</span>
+            </div>
+            <label class="settings-btn" style="cursor: pointer;">
+              <i class="fa-solid fa-upload"></i> Chọn file
+              <input type="file" id="inputRestoreJSON" accept=".json" style="display: none;">
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Đồng bộ dữ liệu -->
+      <section class="settings-section">
+        <h3 class="settings-section__title">
+          <i class="fa-solid fa-cloud-arrow-up"></i> Đồng bộ dữ liệu
+        </h3>
+        <div class="settings-group">
+          <div class="settings-item">
+            <div class="settings-item__info">
+              <span class="settings-item__title">Trạng thái đồng bộ</span>
+              <span class="settings-item__desc"><span id="syncLastTime">Chưa đồng bộ lần nào</span></span>
+            </div>
+            <span class="status-tag status-tag--success" id="syncStatusBadge">Đã đồng bộ</span>
+          </div>
+          <div class="settings-item">
+            <div class="settings-item__info" style="flex:1">
+              <span class="settings-item__title">URL máy chủ đồng bộ (tùy chọn)</span>
+              <input type="text" class="form__input" id="inputSyncUrl" placeholder="VD: https://api.example.com/sync">
+            </div>
+          </div>
+          <div class="settings-item">
+            <div class="settings-item__info">
+              <span class="settings-item__title">Đồng bộ ngay</span>
+              <span class="settings-item__desc">Đẩy các thay đổi đang chờ lên máy chủ khi có mạng</span>
+            </div>
+            <button class="settings-btn settings-btn--primary" id="btnSyncNow">
+              <i class="fa-solid fa-rotate"></i> Đồng bộ
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Tài khoản -->
+      <section class="settings-section">
+        <h3 class="settings-section__title">
+          <i class="fa-solid fa-user"></i> Tài khoản
+        </h3>
+        <div class="settings-group">
+          <div class="settings-item">
+            <div class="settings-item__info">
+              <span class="settings-item__title" id="accountEmail">Chưa đăng nhập</span>
+              <span class="settings-item__desc">Dữ liệu được lưu lên Firestore khi đăng nhập</span>
+            </div>
+            <button class="settings-btn settings-btn--danger" id="btnLogout" style="display:none">
+              <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Nhắc nhở thông báo -->
+      <section class="settings-section">
+        <h3 class="settings-section__title">
+          <i class="fa-solid fa-bell"></i> Nhắc nhở ghi chép
+        </h3>
+        <div class="settings-group">
+          <div class="settings-item">
+            <div class="settings-item__info">
+              <span class="settings-item__title">Trạng thái thông báo</span>
+              <span class="settings-item__desc">Nhận thông báo nhắc ghi chi tiêu mỗi ngày</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: var(--space-sm);">
+              <span class="status-tag status-tag--warning" id="notificationStatusBadge">Chưa bật</span>
+              <button class="settings-btn" id="btnEnableNotification">Cấp quyền</button>
+            </div>
+          </div>
+          <div class="settings-item">
+            <div class="settings-item__info">
+              <span class="settings-item__title">Giờ nhắc nhở mỗi ngày</span>
+              <span class="settings-item__desc">Gợi ý: Buổi tối sau bữa ăn hoặc trước khi ngủ</span>
+            </div>
+            <input type="time" id="inputReminderTime" class="settings-time-input" value="21:00">
+          </div>
+          <div class="settings-item">
+            <div class="settings-item__info">
+              <span class="settings-item__title">Thử nghiệm thông báo</span>
+              <span class="settings-item__desc">Gửi thử 1 thông báo để kiểm tra hoạt động</span>
+            </div>
+            <button class="settings-btn" id="btnTestNotification">
+              <i class="fa-solid fa-paper-plane"></i> Gửi thử
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Vùng nguy hiểm -->
+      <section class="settings-section">
+        <h3 class="settings-section__title" style="color: var(--danger)">
+          <i class="fa-solid fa-triangle-exclamation"></i> Vùng nguy hiểm
+        </h3>
+        <div class="settings-group">
+          <div class="settings-item">
+            <div class="settings-item__info">
+              <span class="settings-item__title">Xóa sạch toàn bộ dữ liệu</span>
+              <span class="settings-item__desc">Xóa mọi khoản thu chi và đưa ngân sách về mặc định</span>
+            </div>
+            <button class="settings-btn settings-btn--danger" id="btnClearAllData">
+              <i class="fa-solid fa-trash"></i> Xóa dữ liệu
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ===== FAB Button ===== -->
+  <button class="fab" id="fabAdd" title="Thêm giao dịch">
+    <i class="fa-solid fa-plus"></i>
+  </button>
+
+  <!-- ===== Modal: Thêm/Sửa Giao Dịch ===== -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal__handle"></div>
+      <div class="modal__header">
+        <h3 class="modal__title" id="modalTitle">Thêm giao dịch</h3>
+        <button class="modal__close" id="modalClose">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="transactionForm">
+        <!-- Loại: Chi / Thu -->
+        <div class="form__group">
+          <label class="form__label">Loại giao dịch</label>
+          <div class="form__type-toggle">
+            <button type="button" class="form__type-btn form__type-btn--expense active" data-type="expense">
+              <i class="fa-solid fa-arrow-down"></i> Chi tiêu
+            </button>
+            <button type="button" class="form__type-btn form__type-btn--income" data-type="income">
+              <i class="fa-solid fa-arrow-up"></i> Thu nhập
+            </button>
+          </div>
+        </div>
+
+        <!-- Tên giao dịch -->
+        <div class="form__group">
+          <label class="form__label" for="inputName">Tên giao dịch</label>
+          <input type="text" class="form__input" id="inputName" placeholder="VD: Ăn trưa, Grab..." maxlength="50" required>
+        </div>
+
+        <!-- Số tiền -->
+        <div class="form__group">
+          <label class="form__label" for="inputAmount">Số tiền (VNĐ)</label>
+          <input type="text" class="form__input" id="inputAmount" placeholder="VD: 50000" inputmode="numeric" required>
+        </div>
+
+        <!-- Danh mục -->
+        <div class="form__group">
+          <label class="form__label">Danh mục</label>
+          <div class="form__categories" id="categoryContainer">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Ngày -->
+        <div class="form__group">
+          <label class="form__label" for="inputDate">Ngày</label>
+          <input type="date" class="form__input" id="inputDate" required>
+        </div>
+
+        <!-- Ví / Tài khoản -->
+        <div class="form__group">
+          <label class="form__label" for="inputWallet">Ví / Tài khoản</label>
+          <select class="form__input" id="inputWallet" style="cursor:pointer">
+            <!-- Rendered by Features -->
+          </select>
+        </div>
+
+        <!-- Lặp định kỳ -->
+        <div class="form__group">
+          <label class="form__label" for="inputRepeat">Lặp lại</label>
+          <select class="form__input" id="inputRepeat" style="cursor:pointer">
+            <option value="none">Không lặp</option>
+            <option value="daily">Hàng ngày</option>
+            <option value="weekly">Hàng tuần</option>
+            <option value="monthly">Hàng tháng</option>
+          </select>
+        </div>
+
+        <!-- Ảnh hóa đơn -->
+        <div class="form__group">
+          <label class="form__label">Ảnh hóa đơn (tùy chọn)</label>
+          <input type="file" class="form__input" id="inputReceipt" accept="image/*">
+          <img id="receiptPreview" style="display:none;max-width:120px;border-radius:8px;margin-top:8px" alt="Hóa đơn">
+        </div>
+
+        <!-- Ghi chú -->
+        <div class="form__group">
+          <label class="form__label" for="inputNote">Ghi chú (tùy chọn)</label>
+          <input type="text" class="form__input" id="inputNote" placeholder="Thêm ghi chú..." maxlength="100">
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="form__submit" id="formSubmitBtn">
+          Thêm giao dịch
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== Modal: Chỉnh Hạn Mức Ngân Sách ===== -->
+  <div class="modal-overlay" id="budgetModal">
+    <div class="modal">
+      <div class="modal__handle"></div>
+      <div class="modal__header">
+        <h3 class="modal__title">Thiết lập ngân sách</h3>
+        <button class="modal__close" id="budgetModalClose">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="budgetForm">
+        <div class="form__group">
+          <label class="form__label" for="budgetCategorySelect">Danh mục chi tiêu</label>
+          <select class="form__input" id="budgetCategorySelect" style="cursor: pointer;">
+            <!-- Rendered by JS -->
+          </select>
+        </div>
+
+        <div class="form__group">
+          <label class="form__label" for="budgetAmountInput">Hạn mức tháng (VNĐ)</label>
+          <input type="number" class="form__input" id="budgetAmountInput" placeholder="VD: 2000000" min="10000" step="10000" required>
+        </div>
+
+        <button type="submit" class="form__submit">
+          Lưu hạn mức
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== Confirm Dialog ===== -->
+  <div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-dialog">
+      <div class="confirm-dialog__icon">
+        <i class="fa-solid fa-trash-can"></i>
+      </div>
+      <h3 class="confirm-dialog__title" id="confirmTitle">Xóa giao dịch?</h3>
+      <p class="confirm-dialog__message" id="confirmMessage">Bạn có chắc muốn xóa?</p>
+      <div class="confirm-dialog__actions">
+        <button class="confirm-dialog__btn confirm-dialog__btn--cancel" id="confirmCancel">Hủy</button>
+        <button class="confirm-dialog__btn confirm-dialog__btn--confirm" id="confirmOk">Xóa</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Modal: Chia Tiền Nhóm (Bill Splitter) ===== -->
+  <div class="modal-overlay" id="splitterModal">
+    <div class="modal">
+      <div class="modal__handle"></div>
+      <div class="modal__header">
+        <h3 class="modal__title"><i class="fa-solid fa-calculator" style="color: var(--primary)"></i> Chia tiền nhóm</h3>
+        <button class="modal__close" id="splitterCloseBtn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="form__group">
+        <label class="form__label">Tên bữa ăn / dịp chia tiền</label>
+        <input type="text" class="form__input" id="splitterMealNote" placeholder="VD: Lẩu Haidilao, Trà sữa..." value="Ăn uống cùng nhóm">
+      </div>
+      <div class="form__group">
+        <label class="form__label">Tổng số tiền bill (VNĐ)</label>
+        <input type="number" class="form__input" id="splitterTotalAmount" placeholder="VD: 300000" value="300000" min="1000" step="5000">
+      </div>
+      <div class="form__group">
+        <label class="form__label">Số người cùng chia</label>
+        <input type="number" class="form__input" id="splitterPeopleCount" value="4" min="2" max="50">
+      </div>
+      <div class="splitter-result">
+        <span class="splitter-result__label">Mỗi người cần chuyển khoản</span>
+        <span class="splitter-result__amount" id="splitterPerPerson">75.000đ</span>
+      </div>
+      <button type="button" class="splitter-copy-btn" id="splitterCopyBtn">
+        <i class="fa-solid fa-copy"></i> Copy tin nhắn gửi Zalo / Messenger
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== Onboarding Tour Modal ===== -->
+  <div class="onboarding-overlay" id="onboardingOverlay">
+    <div class="onboarding-card">
+      <div class="onboarding-step active">
+        <div class="onboarding-icon-circle" style="background: var(--primary-bg); color: var(--primary)">
+          <i class="fa-solid fa-wallet"></i>
+        </div>
+        <h3 class="onboarding-title">Chào mừng bạn!</h3>
+        <p class="onboarding-text">SpendWise giúp bạn quản lý thu chi cá nhân cực kỳ thông minh, rõ ràng và bảo mật 100%.</p>
+      </div>
+      <div class="onboarding-step">
+        <div class="onboarding-icon-circle" style="background: var(--success-light); color: var(--success)">
+          <i class="fa-solid fa-chart-pie"></i>
+        </div>
+        <h3 class="onboarding-title">Biểu đồ trực quan</h3>
+        <p class="onboarding-text">Tự động phân tích các khoản chi theo danh mục, so sánh thu chi và xu hướng tích lũy tiền.</p>
+      </div>
+      <div class="onboarding-step">
+        <div class="onboarding-icon-circle" style="background: var(--warning-light); color: #D97706">
+          <i class="fa-solid fa-bullseye"></i>
+        </div>
+        <h3 class="onboarding-title">Kiểm soát ngân sách</h3>
+        <p class="onboarding-text">Đặt hạn mức cho ăn uống, mua sắm... Web sẽ tự động cảnh báo khi bạn sắp chi vượt hạn mức.</p>
+      </div>
+      <div class="onboarding-dots">
+        <span class="onboarding-dot active"></span>
+        <span class="onboarding-dot"></span>
+        <span class="onboarding-dot"></span>
+      </div>
+      <button type="button" class="onboarding-btn" id="onboardingNextBtn">Tiếp tục →</button>
+    </div>
+  </div>
+
+  <!-- ===== Toast Container ===== -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ===== Bottom Navigation ===== -->
+  <nav class="bottom-nav">
+    <button class="bottom-nav__item active" data-page="pageHome">
+      <i class="fa-solid fa-house"></i>
+      <span>Trang chủ</span>
+    </button>
+    <button class="bottom-nav__item" data-page="pageStats">
+      <i class="fa-solid fa-chart-pie"></i>
+      <span>Thống kê</span>
+    </button>
+    <button class="bottom-nav__item" data-page="pageBudget">
+      <i class="fa-solid fa-bullseye"></i>
+      <span>Ngân sách</span>
+    </button>
+    <button class="bottom-nav__item" data-page="pageSettings">
+      <i class="fa-solid fa-gear"></i>
+      <span>Cài đặt</span>
+    </button>
+  </nav>
+
+  <!-- ===== External Libraries ===== -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+
+  <!-- ===== JavaScript Modules ===== -->
+  <!-- Firebase (Auth + Firestore) -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+  <script src="js/utils.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/category.js"></script>
+  <script src="js/transaction.js"></script>
+  <script src="js/chart.js"></script>
+  <script src="js/budget.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/notification.js"></script>
+  <script src="js/pwa.js"></script>
+  <script src="js/features.js"></script>
+  <script src="js/sync.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
+

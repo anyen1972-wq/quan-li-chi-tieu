@@ -1,0 +1,88 @@
+/* ===== Responsive Design ===== */
+
+/* Tablets and small desktops */
+@media (min-width: 481px) {
+  .app {
+    border-left: 1px solid var(--border-light);
+    border-right: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .modal {
+    border-radius: var(--radius-xl);
+    margin-bottom: var(--space-xl);
+  }
+
+  .bottom-nav {
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+}
+
+/* Large screens — show centered app */
+@media (min-width: 768px) {
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: var(--space-xl) 0;
+  }
+
+  .app {
+    border-radius: var(--radius-xl);
+    min-height: calc(100vh - var(--space-xl) * 2);
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+/* Small phones */
+@media (max-width: 360px) {
+  :root {
+    --space-lg: 1rem;
+    --space-xl: 1.5rem;
+  }
+
+  .summary__balance-amount {
+    font-size: var(--font-size-2xl);
+  }
+
+  .form__categories {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .summary__card-amount {
+    font-size: var(--font-size-lg);
+  }
+}
+
+/* Touch devices — always show action buttons */
+@media (hover: none) {
+  .transaction-item__actions {
+    opacity: 1;
+  }
+}
+
+/* Mobile — keep transaction names readable */
+@media (max-width: 480px) {
+  .transaction-item {
+    gap: var(--space-sm);
+    padding: var(--space-md);
+  }
+
+  .transaction-item__icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .transaction-item__amount {
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
+  }
+
+  .transaction-item__name {
+    font-size: var(--font-size-sm);
+  }
+
+  .transaction-item__date {
+    font-size: var(--font-size-xs);
+  }
+}

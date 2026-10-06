@@ -1,0 +1,86 @@
+/* ===== CSS Variables ===== */
+:root {
+  /* Primary Colors */
+  --primary: #6C63FF;
+  --primary-light: #8B85FF;
+  --primary-dark: #5A52E0;
+  --primary-bg: rgba(108, 99, 255, 0.08);
+
+  /* Semantic Colors */
+  --success: #00C897;
+  --success-light: #E6FAF4;
+  --danger: #FF6B6B;
+  --danger-light: #FFE8E8;
+  --warning: #FFB946;
+  --warning-light: #FFF4E0;
+
+  /* Neutral Colors */
+  --bg-primary: #F8F9FE;
+  --bg-secondary: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --text-primary: #2D3436;
+  --text-secondary: #636E72;
+  --text-muted: #B2BEC3;
+  --border: #E8ECF1;
+  --border-light: #F1F3F8;
+
+  /* Typography */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 2rem;
+
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 50%;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --shadow-primary: 0 4px 16px rgba(108, 99, 255, 0.3);
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.3s ease;
+  --transition-slow: 0.5s ease;
+
+  /* Layout */
+  --max-width: 480px;
+  --header-height: 60px;
+  --bottom-nav-height: 64px;
+}
+
+/* ===== Dark Mode ===== */
+[data-theme="dark"] {
+  --bg-primary: #1A1B2E;
+  --bg-secondary: #232440;
+  --bg-card: #2A2B4A;
+  --text-primary: #EAECF0;
+  --text-secondary: #A0A3BD;
+  --text-muted: #6B6F8D;
+  --border: #3A3B5A;
+  --border-light: #2F3050;
+  --primary-bg: rgba(108, 99, 255, 0.15);
+  --success-light: rgba(0, 200, 151, 0.15);
+  --danger-light: rgba(255, 107, 107, 0.15);
+  --warning-light: rgba(255, 185, 70, 0.15);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
