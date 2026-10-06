@@ -128,20 +128,13 @@ const FormManager = {
       this.handleSubmit();
     });
 
-    // Tự động in hoa chữ cái đầu khi nhập tên giao dịch
+    // Tự động in hoa chữ cái đầu ngay khi gõ chữ đầu tiên
     const inputNameEl = document.getElementById('inputName');
     if (inputNameEl) {
-      inputNameEl.addEventListener('blur', () => {
-        const v = inputNameEl.value.trim();
-        if (v) {
-          inputNameEl.value = v.charAt(0).toUpperCase() + v.slice(1);
-        }
-      });
       inputNameEl.addEventListener('input', () => {
-        // Với giao diện, hiện hoa chữ đầu ngay khi gõ
-        inputNameEl.value = inputNameEl.value.charAt(0) === inputNameEl.value.charAt(0).toLowerCase() && inputNameEl.value.length === 1
-          ? inputNameEl.value.toUpperCase()
-          : inputNameEl.value;
+        if (inputNameEl.value.length === 1) {
+          inputNameEl.value = inputNameEl.value.toUpperCase();
+        }
       });
     }
 
