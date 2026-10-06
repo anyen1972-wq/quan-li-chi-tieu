@@ -150,7 +150,7 @@ const TransactionManager = {
 
     const balance = totalIncome - totalExpense;
 
-    document.getElementById('totalBalance').textContent = Utils.formatCurrency(balance);
+    document.getElementById('totalBalance').textContent = (balance < 0 ? '-' : '') + Utils.formatCurrency(balance);
     document.getElementById('totalIncome').textContent = Utils.formatCurrency(totalIncome);
     document.getElementById('totalExpense').textContent = Utils.formatCurrency(totalExpense);
 
