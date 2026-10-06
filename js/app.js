@@ -131,7 +131,8 @@ const FormManager = {
     // Format amount input on blur
     document.getElementById('inputAmount').addEventListener('input', (e) => {
       // Chỉ cho phép số
-      e.target.value = e.target.value.replace(/[^0-9]/g, '');
+      e.target.value = e.target.value.replace(/[^0-9.]/g, '')
+        .split('.').map((p, i) => i === 0 ? p : p.replace(/\./g, '')).join('.');
     });
   },
 
@@ -186,9 +187,11 @@ const FormManager = {
     this.renderCategories('expense');
     this.setDefaultDate();
 
-    // Reset ví, lặp, ảnh hóa đơn
+    // Reset ví, lặp, ảnh hóa đơn, tiền tệ
     const repeatSel = document.getElementById('inputRepeat');
     if (repeatSel) repeatSel.value = 'none';
+    const txCurSel = document.getElementById('inputCurrencyTx');
+    if (txCurSel) txCurSel.value = 'VND';
     const receiptInput = document.getElementById('inputReceipt');
     if (receiptInput) receiptInput.value = '';
     const preview = document.getElementById('receiptPreview');
@@ -199,6 +202,8 @@ const FormManager = {
   fillForm(transaction) {
     document.getElementById('inputName').value = transaction.name;
     document.getElementById('inputAmount').value = transaction.amount;
+    const txCur = document.getElementById('inputCurrencyTx');
+    if (txCur) txCur.value = 'VND';
     document.getElementById('inputDate').value = transaction.date;
     document.getElementById('inputNote').value = transaction.note || '';
 
@@ -226,7 +231,12 @@ const FormManager = {
 
   handleSubmit() {
     const name = document.getElementById('inputName').value.trim();
-    const amount = parseInt(document.getElementById('inputAmount').value);
+    const rawAmount = parseFloat(document.getElementById('inputAmount').value);
+    const currency = (document.getElementById('inputCurrencyTx') || {}).value || 'VND';
+    // Lưu gốc bằng VNĐ; nếu nhập đô/euro thì quy đổi theo tỉ giá đầu tháng
+    const rate = (typeof Features !== 'undefined' && Features.CURRENCIES[currency])
+      ? Features.CURRENCIES[currency].rate : 1;
+    const amount = Math.round(rawAmount * (currency === 'VND' ? 1 : rate));
     const date = document.getElementById('inputDate').value;
     const note = document.getElementById('inputNote').value.trim();
 

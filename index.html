@@ -591,8 +591,16 @@
 
         <!-- Số tiền -->
         <div class="form__group">
-          <label class="form__label" for="inputAmount">Số tiền (VNĐ)</label>
-          <input type="text" class="form__input" id="inputAmount" placeholder="VD: 50000" inputmode="numeric" required>
+          <label class="form__label" for="inputAmount">Số tiền</label>
+          <div style="display:flex;gap:var(--space-sm)">
+            <input type="text" class="form__input" id="inputAmount" placeholder="VD: 50000 hoặc 2.5" inputmode="decimal" required style="flex:1">
+            <select class="form__input" id="inputCurrencyTx" style="width:100px;cursor:pointer">
+              <option value="VND">VNĐ</option>
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+            </select>
+          </div>
+          <p style="font-size:var(--font-size-xs);color:var(--text-muted);margin-top:4px">Cả đô/euro đều được — hệ thống lưu bằng VNĐ theo tỉ giá đầu tháng.</p>
         </div>
 
         <!-- Danh mục -->
