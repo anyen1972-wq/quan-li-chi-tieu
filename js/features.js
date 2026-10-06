@@ -294,6 +294,26 @@ const Features = {
   // ============================================================
   // CURRENCY (Đa tiền tệ — lưu gốc bằng VNĐ, hiển thị theo lựa chọn)
   // ============================================================
+  async refreshRates() {
+    const monthKey = new Date().toISOString().slice(0, 7); // YYYY-MM
+    const codes = ['USD', 'EUR'];
+    const stored = Storage.get('spendwise_rates', {}) || {};
+    if (stored.month === monthKey && stored.rates) {
+      this.CURRENCIES.USD.rate = stored.rates.USD;
+      this.CURRENCIES.EUR.rate = stored.rates.EUR;
+      return;
+    }
+    try {
+      const res = await fetch('https://open.er-api.com/v6/latest/VND');
+      const data = await res.json();
+      this.CURRENCIES.USD.rate = Math.round(1 / data.rates.USD);
+      this.CURRENCIES.EUR.rate = Math.round(1 / data.rates.EUR);
+      Storage.set('spendwise_rates', { month: monthKey, rates: { USD: this.CURRENCIES.USD.rate, EUR: this.CURRENCIES.EUR.rate } });
+    } catch (e) {
+      // Offline: dùng tỉ giá dự phòng đã cố định trong CURRENCIES
+    }
+  },
+
   getCurrency() {
     return Storage.get('spendwise_currency', 'VND');
   },
@@ -375,6 +395,22 @@ const Features = {
     this.bindGoalEvents();
     this.renderRecurringList();
     this.processRecurring();
+
+    // Tỉ giá đầu tháng — sau khi lấy xong sẽ vẽ lại UI
+    this.refreshRates().then(() => {
+      if (typeof TransactionManager !== 'undefined') {
+        TransactionManager.renderTransactions();
+        TransactionManager.updateSummary();
+      }
+      if (typeof BudgetManager !== 'undefined') {
+        BudgetManager.renderBudgetList();
+        BudgetManager.updateBudgetSummary();
+      }
+      if (typeof ChartManager !== 'undefined' && typeof PageManager !== 'undefined' && PageManager.currentPage === 'pageStats') {
+        ChartManager.renderAllCharts();
+      }
+      this.renderGoals();
+    });
 
     // Currency select
     const currencySelect = document.getElementById('inputCurrency');
