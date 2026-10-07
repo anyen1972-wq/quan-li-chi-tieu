@@ -263,17 +263,52 @@ const AuthManager = {
   async pullFromCloud() {
     if (!this.currentUser) return;
     try {
+      // Giữ một bản dữ liệu local trước khi đọc từ cloud (để gộp nếu cần)
+      const local = {};
+      this.DATA_KEYS.forEach(key => {
+        const raw = localStorage.getItem(key);
+        if (raw !== null) {
+          try { local[key] = JSON.parse(raw); } catch { local[key] = raw; }
+        }
+      });
+
       const doc = await this.userDoc().get();
       if (doc.exists) {
         const data = doc.data();
-        this.DATA_KEYS.forEach(key => {
-          if (key in data) {
-            const val = data[key];
-            localStorage.setItem(key, typeof val === 'string' ? val : JSON.stringify(val));
+
+        // Gộp dữ liệu: giữ cả local (gom lại) và cloud
+        const mergedTxs = this.mergeById(local['spendwise_transactions'] || [], data['spendwise_transactions'] || [], 'id');
+        localStorage.setItem('spendwise_transactions', JSON.stringify(mergedTxs));
+
+        const mergedWallets = this.mergeById(local['spendwise_wallets'] || [], data['spendwise_wallets'] || [], 'id');
+        if (mergedWallets.length) localStorage.setItem('spendwise_wallets', JSON.stringify(mergedWallets));
+
+        const mergedGoals = this.mergeById(local['spendwise_goals'] || [], data['spendwise_goals'] || [], 'id');
+        localStorage.setItem('spendwise_goals', JSON.stringify(mergedGoals));
+
+        const mergedRec = this.mergeById(local['spendwise_recurring'] || [], data['spendwise_recurring'] || [], 'id');
+        localStorage.setItem('spendwise_recurring', JSON.stringify(mergedRec));
+
+        const lb = local['spendwise_budgets'] || {};
+        const cb = data['spendwise_budgets'] || {};
+        const mergedBudgets = { ...cb };
+        Object.keys(lb).forEach(k => {
+          mergedBudgets[k] = Math.max(cb[k] || 0, lb[k] || 0);
+        });
+        localStorage.setItem('spendwise_budgets', JSON.stringify(mergedBudgets));
+
+        // Giữ lại lựa chọn tiền tệ/theme/settings ở local; chỉ nhận các key còn thiếu từ cloud
+        ['spendwise_currency', 'spendwise_theme', 'spendwise_settings', 'spendwise_reminder_time'].forEach(key => {
+          if (local[key] === undefined && data[key] !== undefined) {
+            localStorage.setItem(key, typeof data[key] === 'string' ? data[key] : JSON.stringify(data[key]));
           }
         });
+
         this.rerender();
-        Toast.success('Đã tải dữ liệu từ đám mây!');
+        Toast.success('Đã tải dữ liệu từ đám mây và gộp dữ liệu trên máy!');
+
+        // Đẩy bản gộp lên cloud để hai bên khớp nhau
+        await this.pushToCloud();
       } else {
         // Tài khoản mới → đẩy dữ liệu local hiện có lên cloud
         await this.pushToCloud();
@@ -282,6 +317,28 @@ const AuthManager = {
       console.error(e);
       Toast.error('Không tải được dữ liệu đám mây (có thể đang offline).');
     }
+  },
+
+  /**
+   * Gộp hai mảng theo khóa id, giữ bản ghi mới nhất (nếu có updatedAt/lastRun)
+   */
+  mergeById(localArr, cloudArr, idKey) {
+    const map = new Map();
+    const add = (item, source) => {
+      const k = item && item[idKey];
+      if (!k) return;
+      if (!map.has(k)) {
+        map.set(k, item);
+      } else {
+        const cur = map.get(k);
+        const a = cur.updatedAt || cur.lastRun || '';
+        const b = item.updatedAt || item.lastRun || '';
+        if (b > a) map.set(k, item);
+      }
+    };
+    cloudArr.forEach(item => add(item, 'cloud'));
+    localArr.forEach(item => add(item, 'local'));
+    return Array.from(map.values());
   },
 
   /**
