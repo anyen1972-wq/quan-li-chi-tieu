@@ -3,7 +3,7 @@
  * Hỗ trợ chạy offline khi không có kết nối Internet
  */
 
-const CACHE_NAME = 'spendwise-cache-v46';
+const CACHE_NAME = 'spendwise-cache-v47';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -58,6 +58,12 @@ self.addEventListener('activate', (event) => {
       );
     }).then(() => self.clients.claim())
   );
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // Xử lý các request mạng: Thử tìm trong Cache trước, nếu không có thì gọi Network

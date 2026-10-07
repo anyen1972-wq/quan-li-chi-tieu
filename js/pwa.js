@@ -21,6 +21,25 @@ const PWAManager = {
         navigator.serviceWorker.register('./sw.js')
           .then((reg) => {
             console.log('✅ Service Worker đăng ký thành công:', reg.scope);
+
+            // Khi có bản mới → tự reload trang (một lần)
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+              if (refreshing) return;
+              refreshing = true;
+              window.location.reload();
+            });
+
+            reg.addEventListener('updatefound', () => {
+              const newWorker = reg.installing;
+              if (!newWorker) return;
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  console.log('🔄 Có bản mới, đang cập nhật...');
+                  newWorker.postMessage({ type: 'SKIP_WAITING' });
+                }
+              });
+            });
           })
           .catch((err) => {
             console.log('ℹ️ Service Worker (bỏ qua khi chạy qua file:// local):', err.message);
