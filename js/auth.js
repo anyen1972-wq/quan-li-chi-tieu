@@ -61,7 +61,6 @@ const AuthManager = {
         await this.pullFromCloud();
         Toast.success(`Chào mừng ${user.email}!`);
       } else {
-        if (overlay) overlay.classList.add('active');
         this.updateAccountUI(null);
       }
     });
@@ -75,6 +74,11 @@ const AuthManager = {
     }
     if (logoutBtn) {
       logoutBtn.addEventListener('click', () => this.signOut());
+    }
+
+    const openAuthBtn = document.getElementById('btnOpenAuth');
+    if (openAuthBtn) {
+      openAuthBtn.addEventListener('click', () => this.openAuthOverlay());
     }
 
     const googleBtn = document.getElementById('authGoogleBtn');
@@ -240,6 +244,13 @@ const AuthManager = {
     }
     const logoutBtn = document.getElementById('btnLogout');
     if (logoutBtn) logoutBtn.style.display = user ? '' : 'none';
+    const openAuthBtn = document.getElementById('btnOpenAuth');
+    if (openAuthBtn) openAuthBtn.style.display = user ? 'none' : '';
+  },
+
+  openAuthOverlay() {
+    const overlay = document.getElementById('authOverlay');
+    if (overlay) overlay.classList.add('active');
   },
 
   userDoc() {
