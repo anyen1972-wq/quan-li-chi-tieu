@@ -1,5 +1,5 @@
 /**
- * export.js — Xuất dữ liệu Excel (XLSX/CSV) và Sao lưu / Phục hồi JSON
+ * export.js — Xuất dữ liệu Excel (XLSX) và Sao lưu / Phục hồi JSON
  */
 
 const ExportManager = {
@@ -82,34 +82,6 @@ const ExportManager = {
     const fileName = `SpendWise_BaoCao_${Utils.getToday()}.xlsx`;
     XLSX.writeFile(workbook, fileName);
     Toast.success('Đã xuất file Excel thành công!');
-  },
-
-  /**
-   * Xuất ra CSV
-   */
-  exportToCSV() {
-    const transactions = Storage.getTransactions();
-    if (transactions.length === 0) {
-      Toast.error('Chưa có giao dịch nào để xuất CSV!');
-      return;
-    }
-
-    const headers = ['STT,Ngày,Loại,Danh mục,Tên giao dịch,Số tiền (VNĐ),Ghi chú'];
-    const rows = transactions.map((t, idx) => {
-      const cat = Categories.getById(t.category);
-      const name = `"${(t.name || '').replace(/"/g, '""')}"`;
-      const note = `"${(t.note || '').replace(/"/g, '""')}"`;
-      return `${idx + 1},${Utils.formatDate(t.date)},${t.type === 'income' ? 'Thu nhập' : 'Chi tiêu'},${cat ? cat.name : 'Khác'},${name},${t.amount},${note}`;
-    });
-
-    // Thêm UTF-8 BOM để Excel hiển thị đúng tiếng Việt có dấu
-    const csvContent = '\uFEFF' + [headers, ...rows].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `SpendWise_GiaoDich_${Utils.getToday()}.csv`;
-    link.click();
-    Toast.success('Đã xuất file CSV thành công!');
   },
 
   /**
