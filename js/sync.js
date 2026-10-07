@@ -49,8 +49,14 @@ const SyncManager = {
     Storage.set = (key, data) => {
       const result = origSet(key, data);
       if (key !== this.QUEUE_KEY && key !== this.URL_KEY && key !== this.LAST_SYNC_KEY) {
-        this.pushQueue({ op: 'set', key });
-        if (typeof AuthManager !== 'undefined') AuthManager.schedulePush();
+        // Dữ liệu sẽ tự đồng bộ qua Firebase khi đã đăng nhập; chỉ lưu queue khi
+        // đang dùng chế độ local / chưa đăng nhập để đồng bộ sau bằng nút
+        const useFirebase = typeof AuthManager !== 'undefined' && AuthManager.currentUser;
+        if (useFirebase) {
+          AuthManager.schedulePush();
+        } else {
+          this.pushQueue({ op: 'set', key });
+        }
       }
       return result;
     };
@@ -58,8 +64,12 @@ const SyncManager = {
     Storage.remove = (key) => {
       origRemove(key);
       if (key !== this.QUEUE_KEY && key !== this.URL_KEY && key !== this.LAST_SYNC_KEY) {
-        this.pushQueue({ op: 'remove', key });
-        if (typeof AuthManager !== 'undefined') AuthManager.schedulePush();
+        const useFirebase = typeof AuthManager !== 'undefined' && AuthManager.currentUser;
+        if (useFirebase) {
+          AuthManager.schedulePush();
+        } else {
+          this.pushQueue({ op: 'remove', key });
+        }
       }
     };
   },
