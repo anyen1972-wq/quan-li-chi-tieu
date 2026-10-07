@@ -14,12 +14,6 @@ const ExportManager = {
       btnExcel.addEventListener('click', () => this.exportToExcel());
     }
 
-    // Export CSV
-    const btnCSV = document.getElementById('btnExportCSV');
-    if (btnCSV) {
-      btnCSV.addEventListener('click', () => this.exportToCSV());
-    }
-
     // Backup JSON
     const btnBackup = document.getElementById('btnBackupJSON');
     if (btnBackup) {
