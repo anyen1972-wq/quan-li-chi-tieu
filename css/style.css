@@ -31,6 +31,8 @@ body {
   padding-bottom: calc(var(--bottom-nav-height) + 56px + var(--space-lg) * 2 + env(safe-area-inset-bottom, 0px));
   border-left: 1px solid var(--border);
   border-right: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   box-sizing: border-box;
 }
 
